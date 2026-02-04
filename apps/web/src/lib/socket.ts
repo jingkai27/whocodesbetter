@@ -1,10 +1,10 @@
 import { io, Socket } from 'socket.io-client';
-import { ClientToServerEvents, ServerToClientEvents } from '@codeduel/shared';
+import { ClientToServerEvents, ServerToClientEvents, CodeSubmission } from '@codeduel/shared';
 import { api } from './api';
 
 const SOCKET_URL = process.env.NEXT_PUBLIC_SOCKET_URL || 'http://localhost:3001';
 
-type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
+export type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
 let socket: TypedSocket | null = null;
 
@@ -58,4 +58,46 @@ export function joinLobby(): void {
 
 export function leaveLobby(): void {
   socket?.emit('leave_lobby');
+}
+
+export function joinMatch(matchId: string): void {
+  socket?.emit('join_match', matchId);
+}
+
+export function submitCode(submission: Omit<CodeSubmission, 'playerId'>): void {
+  socket?.emit('submit_code', submission as CodeSubmission);
+}
+
+export function runCode(submission: Omit<CodeSubmission, 'playerId'>): void {
+  socket?.emit('run_code', submission as CodeSubmission);
+}
+
+export function updateCode(matchId: string, code: string): void {
+  socket?.emit('code_update', { matchId, code });
+}
+
+export function forfeitMatch(matchId: string): void {
+  socket?.emit('forfeit_match', matchId);
+}
+
+// Chat methods
+export function sendLobbyMessage(content: string): void {
+  socket?.emit('send_lobby_message', content);
+}
+
+export function sendMatchMessage(matchId: string, content: string): void {
+  socket?.emit('send_match_message', { matchId, content });
+}
+
+// Spectator methods
+export function joinSpectator(matchId: string): void {
+  socket?.emit('join_spectator', matchId);
+}
+
+export function leaveSpectator(matchId: string): void {
+  socket?.emit('leave_spectator', matchId);
+}
+
+export function getActiveMatches(): void {
+  socket?.emit('get_active_matches');
 }
