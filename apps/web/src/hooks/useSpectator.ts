@@ -2,8 +2,10 @@
 
 import { useEffect, useCallback, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { getSocket, joinSpectator, leaveSpectator, getActiveMatches } from '@/lib/socket';
+import { getSocket, joinSpectator, leaveSpectator, getActiveMatches, onConnectionChange } from '@/lib/socket';
 import { MatchWithDetails, ActiveMatchSummary } from '@codeduel/shared';
+
+const SPECTATOR_TIMEOUT_MS = 10000; // 10 second timeout
 
 interface SpectatorState {
   match: MatchWithDetails | null;
@@ -19,6 +21,8 @@ export function useSpectator(options: UseSpectatorOptions = {}) {
   const { matchId } = options;
   const router = useRouter();
   const hasSetupListeners = useRef(false);
+  const hasJoinedSpectator = useRef(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [spectatorState, setSpectatorState] = useState<SpectatorState>({
     match: null,
@@ -28,9 +32,26 @@ export function useSpectator(options: UseSpectatorOptions = {}) {
   const [activeMatches, setActiveMatches] = useState<ActiveMatchSummary[]>([]);
   const [spectatorCount, setSpectatorCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [socketConnected, setSocketConnected] = useState(false);
+
+  // Track socket connection state
+  useEffect(() => {
+    const unsubscribe = onConnectionChange((connected) => {
+      setSocketConnected(connected);
+      if (!connected) {
+        // Reset listeners flag when disconnected so they get re-setup on reconnect
+        hasSetupListeners.current = false;
+        hasJoinedSpectator.current = false;
+      }
+    });
+    return unsubscribe;
+  }, []);
 
   // Set up socket event listeners
   useEffect(() => {
+    if (!socketConnected) return;
+
     const socket = getSocket();
     if (!socket || hasSetupListeners.current) return;
 
@@ -41,8 +62,14 @@ export function useSpectator(options: UseSpectatorOptions = {}) {
       player1Code: string;
       player2Code: string;
     }) => {
+      // Clear timeout since we received state
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
       setSpectatorState(data);
       setIsLoading(false);
+      setError(null);
     };
 
     const handlePlayerCodeUpdate = (data: { playerId: string; code: string }) => {
@@ -87,21 +114,35 @@ export function useSpectator(options: UseSpectatorOptions = {}) {
       socket.off('active_matches', handleActiveMatches);
       hasSetupListeners.current = false;
     };
-  }, [matchId]);
+  }, [socketConnected, matchId]);
 
-  // Join spectator when matchId is provided
+  // Join spectator when matchId is provided and socket is connected with listeners ready
   useEffect(() => {
-    if (matchId) {
+    if (matchId && socketConnected && hasSetupListeners.current && !hasJoinedSpectator.current) {
+      hasJoinedSpectator.current = true;
       setIsLoading(true);
+      setError(null);
       joinSpectator(matchId);
+
+      // Set timeout for connection failure
+      timeoutRef.current = setTimeout(() => {
+        if (isLoading && !spectatorState.match) {
+          setError('Failed to connect to match. The match may have ended or does not exist.');
+          setIsLoading(false);
+        }
+      }, SPECTATOR_TIMEOUT_MS);
     }
 
     return () => {
       if (matchId) {
         leaveSpectator(matchId);
       }
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+        timeoutRef.current = null;
+      }
     };
-  }, [matchId]);
+  }, [matchId, socketConnected, isLoading, spectatorState.match]);
 
   const fetchActiveMatches = useCallback(() => {
     setIsLoading(true);
@@ -128,5 +169,6 @@ export function useSpectator(options: UseSpectatorOptions = {}) {
     spectateMatch,
 
     isLoading,
+    error,
   };
 }

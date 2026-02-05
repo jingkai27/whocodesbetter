@@ -8,6 +8,24 @@ export type TypedSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
 let socket: TypedSocket | null = null;
 
+// Connection state observers
+const connectionListeners: Set<(connected: boolean) => void> = new Set();
+
+export function isSocketConnected(): boolean {
+  return socket?.connected ?? false;
+}
+
+export function onConnectionChange(callback: (connected: boolean) => void): () => void {
+  connectionListeners.add(callback);
+  // Immediately notify of current state
+  callback(isSocketConnected());
+  return () => connectionListeners.delete(callback);
+}
+
+function notifyConnectionListeners(connected: boolean): void {
+  connectionListeners.forEach((listener) => listener(connected));
+}
+
 export function getSocket(): TypedSocket | null {
   return socket;
 }
@@ -32,10 +50,12 @@ export function connectSocket(): TypedSocket {
 
   socket.on('connect', () => {
     console.log('Socket connected:', socket?.id);
+    notifyConnectionListeners(true);
   });
 
   socket.on('disconnect', (reason) => {
     console.log('Socket disconnected:', reason);
+    notifyConnectionListeners(false);
   });
 
   socket.on('connect_error', (error) => {

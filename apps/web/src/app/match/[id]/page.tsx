@@ -12,6 +12,7 @@ import {
   LanguageSelector,
   MatchHeader,
   MatchEndModal,
+  OpponentActivity,
 } from '@/components/match';
 import { ChatBox } from '@/components/chat';
 import { Play, Send, MessageCircle } from 'lucide-react';
@@ -206,22 +207,31 @@ export default function MatchPage() {
           </div>
         </div>
 
-        {/* Right Panel - Opponent's Code (Blurred) */}
+        {/* Right Panel - Opponent Activity (or Code if match ended) */}
         <div className="w-[350px] flex-shrink-0 border-l border-gray-700">
-          <div className="border-b border-gray-700 bg-[#161b22] px-4 py-2">
-            <span className="text-xs text-gray-500">
-              {opponent?.username}&apos;s Code
-            </span>
-          </div>
-          <div className="h-[calc(100%-40px)]">
-            <CodeEditor
-              value={opponentCode || '// Waiting for opponent...'}
-              onChange={() => {}}
-              language={selectedLanguage}
-              readOnly
-              blur={!isMatchEnded}
+          {isMatchEnded ? (
+            <>
+              <div className="border-b border-gray-700 bg-[#161b22] px-4 py-2">
+                <span className="text-xs text-gray-500">
+                  {opponent?.username}&apos;s Code
+                </span>
+              </div>
+              <div className="h-[calc(100%-40px)]">
+                <CodeEditor
+                  value={opponentCode || '// No code submitted'}
+                  onChange={() => {}}
+                  language={selectedLanguage}
+                  readOnly
+                />
+              </div>
+            </>
+          ) : (
+            <OpponentActivity
+              username={opponent?.username || 'Opponent'}
+              code={opponentCode}
+              isMatchEnded={isMatchEnded}
             />
-          </div>
+          )}
         </div>
       </div>
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useCallback, useRef } from 'react';
+import { useEffect, useCallback, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMatchStore } from '@/stores/matchStore';
 import { useAuth } from './useAuth';
@@ -11,6 +11,7 @@ import {
   runCode as socketRunCode,
   updateCode as socketUpdateCode,
   forfeitMatch as socketForfeitMatch,
+  onConnectionChange,
   TypedSocket,
 } from '@/lib/socket';
 import { MatchWithDetails, ExecutionResult } from '@codeduel/shared';
@@ -25,7 +26,22 @@ export function useMatch(options: UseMatchOptions = {}) {
   const router = useRouter();
   const { user } = useAuth();
   const hasSetupListeners = useRef(false);
+  const hasJoinedMatch = useRef(false);
   const codeUpdateTimeout = useRef<NodeJS.Timeout | null>(null);
+  const [socketConnected, setSocketConnected] = useState(false);
+
+  // Track socket connection state
+  useEffect(() => {
+    const unsubscribe = onConnectionChange((connected) => {
+      setSocketConnected(connected);
+      if (!connected) {
+        // Reset listeners flag when disconnected so they get re-setup on reconnect
+        hasSetupListeners.current = false;
+        hasJoinedMatch.current = false;
+      }
+    });
+    return unsubscribe;
+  }, []);
 
   const {
     match,
@@ -53,6 +69,8 @@ export function useMatch(options: UseMatchOptions = {}) {
 
   // Set up socket event listeners
   useEffect(() => {
+    if (!socketConnected) return;
+
     const socket = getSocket();
     if (!socket || hasSetupListeners.current) return;
 
@@ -122,14 +140,15 @@ export function useMatch(options: UseMatchOptions = {}) {
       socket.off('error', handleError);
       hasSetupListeners.current = false;
     };
-  }, [router, setMatch, setOpponentCode, setLastResult, setIsSubmitting, setIsRunning, endMatch, setEndTime]);
+  }, [socketConnected, router, setMatch, setOpponentCode, setLastResult, setIsSubmitting, setIsRunning, endMatch, setEndTime]);
 
-  // Auto-join match if matchId is provided
+  // Auto-join match if matchId is provided and socket is connected with listeners ready
   useEffect(() => {
-    if (matchId && autoJoin) {
+    if (matchId && autoJoin && socketConnected && hasSetupListeners.current && !hasJoinedMatch.current) {
+      hasJoinedMatch.current = true;
       socketJoinMatch(matchId);
     }
-  }, [matchId, autoJoin]);
+  }, [matchId, autoJoin, socketConnected]);
 
   // Debounced code update to opponent
   const sendCodeUpdate = useCallback(

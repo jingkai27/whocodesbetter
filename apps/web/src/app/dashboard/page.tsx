@@ -119,7 +119,7 @@ export default function DashboardPage() {
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <Link href="/dashboard" className="flex items-center gap-2">
             <Swords className="h-8 w-8 text-primary-500" />
-            <span className="text-xl font-bold">CodeDuel</span>
+            <span className="text-xl font-bold">WhoCodesBetter?</span>
           </Link>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">

@@ -14,7 +14,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'CodeDuel - Real-time 1v1 Coding Battles',
+  title: 'WhoCodesBetter? - Real-time 1v1 Coding Battles',
   description: 'Challenge opponents in real-time coding competitions. Improve your skills, climb the leaderboard, and become a coding champion.',
 };
 

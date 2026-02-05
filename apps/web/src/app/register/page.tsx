@@ -41,7 +41,7 @@ export default function RegisterPage() {
         <div className="mb-8 text-center">
           <Link href="/" className="inline-flex items-center gap-2">
             <Swords className="h-10 w-10 text-primary-500" />
-            <span className="text-2xl font-bold">CodeDuel</span>
+            <span className="text-2xl font-bold">WhoCodesBetter?</span>
           </Link>
           <h1 className="mt-6 text-3xl font-bold">Create an account</h1>
           <p className="mt-2 text-muted">Start your competitive coding journey</p>

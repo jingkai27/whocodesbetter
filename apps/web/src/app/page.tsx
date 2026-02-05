@@ -9,7 +9,7 @@ export default function Home() {
         <div className="container mx-auto flex h-16 items-center justify-between px-4">
           <div className="flex items-center gap-2">
             <Swords className="h-8 w-8 text-primary-500" />
-            <span className="text-xl font-bold">CodeDuel</span>
+            <span className="text-xl font-bold">WhoCodesBetter?</span>
           </div>
           <nav className="flex items-center gap-4">
             <Link href="/login" className="btn-ghost">
@@ -47,7 +47,7 @@ export default function Home() {
         <section id="features" className="border-t border-border bg-card/50 py-24">
           <div className="container mx-auto px-4">
             <h2 className="mb-12 text-center text-3xl font-bold">
-              Why CodeDuel?
+              Why WhoCodesBetter?
             </h2>
             <div className="grid gap-8 md:grid-cols-3">
               <div className="card text-center">
@@ -101,7 +101,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-border py-8">
         <div className="container mx-auto px-4 text-center text-sm text-muted">
-          <p>&copy; {new Date().getFullYear()} CodeDuel. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} WhoCodesBetter? All rights reserved.</p>
         </div>
       </footer>
     </div>

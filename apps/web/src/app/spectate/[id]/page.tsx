@@ -20,6 +20,7 @@ export default function SpectatePage() {
     player2Code,
     spectatorCount,
     isLoading,
+    error,
   } = useSpectator({ matchId });
 
   const { matchMessages, sendToMatch } = useChat({ matchId });
@@ -43,6 +44,33 @@ export default function SpectatePage() {
             Authentication Required
           </h1>
           <p className="text-gray-400">Please log in to spectate matches.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#0d1117]">
+        <div className="text-center">
+          <div className="mb-4 flex justify-center">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-500/20">
+              <Eye className="h-8 w-8 text-red-400" />
+            </div>
+          </div>
+          <h1 className="mb-2 text-2xl font-bold text-white">
+            Connection Failed
+          </h1>
+          <p className="mb-6 max-w-md text-gray-400">
+            {error}
+          </p>
+          <button
+            onClick={() => router.push('/dashboard')}
+            className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </button>
         </div>
       </div>
     );
