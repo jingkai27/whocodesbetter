@@ -2,7 +2,7 @@
 
 # WhoCodesBetter?
 
-![WhoCodesBetter? Banner](path/to/your/banner-image.png)
+![WhoCodesBetter? Banner](./assets/videos/whocodesbetter.png)
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Next.js](https://img.shields.io/badge/Next.js-000000?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
@@ -48,6 +48,11 @@ Optimisation Notes:
 ![Trash Talk](./assets/videos/trash-talk.gif)
 
 ### Feature 1c: Live Progress of your opponent
+  - Code updates are debounced (200ms) to avoid flooding
+  - Opponent's actual code is hidden (stored but not displayed)
+  - Only activity indicators shown: line count, char count, typing status
+  - After match ends, full code is revealed in the CodeEditor
+  - Optimistic Updates: Own editor is updated first, then synced to opponents 
 
 ![Live Progress](./assets/videos/live-progress.gif)
 
@@ -64,6 +69,8 @@ Features:
 
 ![Find Match](./assets/videos/find-match.gif)
 
+## AI Declaration
+AI was used to help with the frontend, help with learning through prompting and debug code when necessary. 
 
 ## Key Features Implemented
   - Monorepo: TurboRepo with npm workspaces
